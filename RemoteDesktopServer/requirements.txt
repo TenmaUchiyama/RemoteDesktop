@@ -1,0 +1,10 @@
+websockets
+pywin32
+ctypes
+cairosvg
+win32api
+pyautogui
+pynput
+mss
+pygetwindow
+subprocess
