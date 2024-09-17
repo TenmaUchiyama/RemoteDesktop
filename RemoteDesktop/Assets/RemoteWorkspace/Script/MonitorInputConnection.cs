@@ -116,29 +116,29 @@ public class MonitorInputConnection : MonoBehaviour
         ConnectionInitialize(); 
     }
 
-    public void SendClick()
+    public async Task SendClick()
     {
         string message = JsonConvert.SerializeObject(
             new {
                 type = "click",
             }
         );
-        SendData(message);
+        await SendData(message);
     }
 
 
-    public void SendDoubleClick()
+    public async Task SendDoubleClick()
     {
         string message = JsonConvert.SerializeObject(
             new {
                 type = "double_click",
             }
         );
-        SendData(message);
+        await SendData(message);
     }
 
 
-    public void SendRightClick() 
+    public async Task SendRightClick() 
     {
     string message = JsonConvert.SerializeObject(
             new {
@@ -147,10 +147,10 @@ public class MonitorInputConnection : MonoBehaviour
             }
         );
     
-        SendData(message);
+        await SendData(message);
     }
 
-    public void SendLeftScroll(bool isFlickUp )
+    public async Task SendLeftScroll(bool isFlickUp )
     {
         
 
@@ -167,11 +167,11 @@ public class MonitorInputConnection : MonoBehaviour
 
 
 
-        SendData(message);
+        await SendData(message);
 
     }
 
-    public void SendPressBtn(bool value)
+    public async Task SendPressBtn(bool value)
     {
         string message = JsonConvert.SerializeObject(
             new {
@@ -180,11 +180,11 @@ public class MonitorInputConnection : MonoBehaviour
             }
         );
       
-        SendData(message);
+        await SendData(message);
     }
 
 
-    public void SendScroll(float value)
+    public async Task SendScroll(float value)
     {
         string message = JsonConvert.SerializeObject(
             new {
@@ -192,9 +192,9 @@ public class MonitorInputConnection : MonoBehaviour
                 value = value
             }
         );
-        SendData(message);
+        await SendData(message);
     }
-    public void SetCursorPosition(string monitor_id, string monitor_type, Vector2 position)
+    public async Task SetCursorPosition(string monitor_id, string monitor_type, Vector2 position)
     {
         string message = JsonConvert.SerializeObject(
             new {
@@ -207,13 +207,13 @@ public class MonitorInputConnection : MonoBehaviour
                 }
             }
         );
-        SendData(message);
+        await SendData(message);
     }
 
 
 
 
-    private void SendData(string message)
+    private async Task SendData(string message)
     {
 
       
@@ -222,7 +222,7 @@ public class MonitorInputConnection : MonoBehaviour
         if (webSocket.State == WebSocketState.Open)
         {
             byte[] buffer = System.Text.Encoding.UTF8.GetBytes(message);
-            webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, cancellationTokenSource.Token).Wait();
+            await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, cancellationTokenSource.Token);
         }
     }
 

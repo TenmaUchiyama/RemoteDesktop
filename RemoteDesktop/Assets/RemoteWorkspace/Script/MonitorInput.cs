@@ -35,31 +35,31 @@ public class MonitorInput : MonoBehaviour , IPointerMoveHandler, IPointerEnterHa
         ControllerInput.Instance.onTriggerPressed.AddListener(() => {
            
             if(!this.inputConnection) return;
-            this.inputConnection.SendPressBtn(true);
+            Task.Run(async () => {await this.inputConnection.SendPressBtn(true);}); 
         });
 
         ControllerInput.Instance.onTriggerReleased.AddListener(() => {
             if(!this.inputConnection) return;
          
-            this.inputConnection.SendPressBtn(false);
+            Task.Run(async () => {await this.inputConnection.SendPressBtn(false);}); 
         });
 
 
         ControllerInput.Instance.onGripperPressed.AddListener(() => {
             if(!this.inputConnection) return;
-            this.inputConnection.SendRightClick(); 
+            Task.Run(async () => {await this.inputConnection.SendRightClick();}); 
         });
 
 
 
 
         ControllerInput.Instance.onFlickLeftUp.AddListener(() => {
-            inputConnection.SendLeftScroll(true); 
+            Task.Run(async () => {await this.inputConnection.SendLeftScroll(true);}); 
         });
 
 
         ControllerInput.Instance.onFlickLeftDown.AddListener(() => {
-           inputConnection.SendLeftScroll(false); 
+            Task.Run(async () => {await this.inputConnection.SendLeftScroll(false);}); 
         });
 
 
@@ -105,7 +105,7 @@ public class MonitorInput : MonoBehaviour , IPointerMoveHandler, IPointerEnterHa
     public void OnPointerClick(PointerEventData eventData)
     {
        if(!this.inputConnection) return;
-        this.inputConnection.SendClick();
+        Task.Run(async () => {await this.inputConnection.SendPressBtn(false);}); 
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -145,7 +145,7 @@ public class MonitorInput : MonoBehaviour , IPointerMoveHandler, IPointerEnterHa
         cursorImage.rectTransform.localPosition = localPosition;
 
         if(!this.inputConnection) return; 
-        this.inputConnection.SetCursorPosition(this.monitor_id, this.monitor_type, new Vector2(relativeX, relativeY));
+        Task.Run(async () => {await this.inputConnection.SetCursorPosition(this.monitor_id, this.monitor_type, new Vector2(relativeX, relativeY));});
 
     
 
@@ -160,7 +160,7 @@ public class MonitorInput : MonoBehaviour , IPointerMoveHandler, IPointerEnterHa
         if(ControllerInput.Instance.IsRightTouchpadTouchedOnce)
         {
             float delta = ControllerInput.Instance.DeltaValueR;
-            this.inputConnection.SendScroll(delta);
+            Task.Run(async () => {await this.inputConnection.SendScroll(delta);});
         }
         if(isFrameGrabbed)
         {   

@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using WebSocketSharp;
 using Unity.VisualScripting;
 using UnityEngine.XR.Interaction.Toolkit.UI;
+using PimDeWitte.UnityMainThreadDispatcher;
 
 public class RemoteMonitorConnection_WSS : MonoBehaviour  
 {
@@ -15,20 +16,24 @@ public class RemoteMonitorConnection_WSS : MonoBehaviour
 
     private RawImage rawImage;
     private Texture2D texture;
-    private ConcurrentQueue<byte[]> imageQueue;
     private bool sizeSet = false;
 
-    public RemoteMonitorConnection_WSS (string endpoint, GameObject parentObject )
+    public RemoteMonitorConnection_WSS (string endpoint, RawImage rawImage )
     {
         this.endpoint = endpoint;
-        imageQueue = new ConcurrentQueue<byte[]>();
-        Initialize(parentObject);
+       
+
+        this.rawImage = rawImage;
+        texture = new Texture2D(2, 2);
+        texture.anisoLevel = 10; 
+        rawImage.texture = texture;
+        ConectionInitialize();
     }
 
-    private void Initialize(GameObject parentObject)
+    private void ConectionInitialize()
     {
         // WebSocket接続の作成
-        string url = $"ws://192.168.10.102:8765/{this.endpoint}";
+        string url = $"ws://localhost:8765/{this.endpoint}";
         webSocket = new WebSocket(url);
 
         // イベントハンドラの設定
@@ -39,43 +44,14 @@ public class RemoteMonitorConnection_WSS : MonoBehaviour
 
         webSocket.ConnectAsync();
 
-        // Monitorのオブジェクト追加
-        monitorObject = new GameObject();
-        monitorObject.name = "Monitor";
-        monitorObject.transform.SetParent(parentObject.transform, false);
-
-        // キャンバスの追加
-        Canvas monitorCanvas = monitorObject.AddComponent<Canvas>();
-        monitorCanvas.AddComponent<CanvasScaler>();
-        monitorCanvas.renderMode = RenderMode.WorldSpace;
-        monitorCanvas.worldCamera = Camera.main;
-        monitorCanvas.AddComponent<TrackedDeviceGraphicRaycaster>();
-
-        // RawImageの追加
-        rawImage = monitorCanvas.gameObject.AddComponent<RawImage>();
-        rawImage.rectTransform.anchorMin = new Vector2(0, 0);
-        rawImage.rectTransform.anchorMax = new Vector2(1, 1);
-        rawImage.rectTransform.anchoredPosition = Vector2.zero;
-        rawImage.rectTransform.sizeDelta = Vector2.zero;
-
-        // 初期化
-        RectTransform rectTransform = monitorObject.GetComponent<RectTransform>();
-        rectTransform.sizeDelta = new Vector2(200, 200); // 必要に応じてサイズを調整
-
-        Vector3 objPos = rectTransform.localPosition;
-        objPos.y += 1.23f;
-        rectTransform.localPosition = objPos;
-
-        // テクスチャの初期化
-        texture = new Texture2D(1, 1);
-        rawImage.texture = texture;
+      
     }
 
     private void OnMessage(object sender, MessageEventArgs e)
     {
         if (e.IsBinary && e.RawData.Length > 0)
         {
-            imageQueue.Enqueue(e.RawData);
+            UnityMainThreadDispatcher.Instance().Enqueue(() => LoadImage(e.RawData));
         }
     }
 
@@ -89,10 +65,9 @@ public class RemoteMonitorConnection_WSS : MonoBehaviour
         Debug.Log($"WebSocket connection closed for endpoint {this.endpoint}: {e.Reason}");
     }
 
-    public void Update()
+    public void LoadImage(byte[] imageData)
     {
-        while (imageQueue.TryDequeue(out byte[] imageData))
-        {
+        
             if (imageData != null && imageData.Length > 0)
             {
                 try
@@ -113,7 +88,7 @@ public class RemoteMonitorConnection_WSS : MonoBehaviour
                     Debug.LogError($"Error loading image data for endpoint {this.endpoint}: {ex.Message}");
                 }
             }
-        }
+        
     }
 
     private void SetRectTransformSize()
